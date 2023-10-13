@@ -2,11 +2,7 @@
 
 ## Overview
 
-This project involves the analysis of customer product data using Azure Databricks. The goal is to gain insights into the quality of products experienced by customers across different Census geographic levels (e.g., State, County, Tract, Block Group, and Block) in the USA.
-
-### Data Processing
-
-In this project, I have performed the following tasks:
+This project involves the analysis of customer product data using Azure Databricks. The goal is to gain insights into the quality of products experienced by customers across different Census geographic levels (e.g., State, County, Tract, Block Group, and Block) in the USA. I have performed the following tasks:
 
 - Imported necessary libraries and set up the environment.
 - Defined product models with their corresponding quality codes (A > B > C) and geographic levels.
