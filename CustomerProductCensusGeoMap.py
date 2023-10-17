@@ -10,13 +10,6 @@ from pyspark.sql.types import *
 import pyspark.sql.functions as f
 import matplotlib.pyplot as plt
 
-get_ipython().run_line_magic('matplotlib', 'inline')
-pd.set_option('display.expand_frame_repr', False)
-pd.set_option('display.precision', 2) 
-pd.set_option('display.max_columns', None)
-from IPython.core.interactiveshell import InteractiveShell
-InteractiveShell.ast_node_interactivity = "all"
-
 #product model with their corresponding code, in terms of quality A > B > C! 
 product_model_dict = {4:'C', 2:'B', 1: 'A'}
 
@@ -24,10 +17,10 @@ product_model_dict = {4:'C', 2:'B', 1: 'A'}
 subgeo_dict = {'Blocks':15, 'Block Groups':12, 'Tracts':11, 'Counties':5, 'States':2}
 
 #specify the version of products dataset!
-product_data_version = '211'
+product_data_version = 'p3'
 
 #specify the version of customers data!
-customer_data_version = 'v2'
+customer_data_version = 'c5'
 
 #All means the entire USA will be processed. To do only one state write state fips code like 11 for DC.
 state_fips = 'All'
@@ -51,7 +44,6 @@ customerDataCSV_location = "/mnt/customer/%s"%customer_data_version
 
 #specify the mounted folder in which your products data is located
 productDataCSV_location = "/mnt/product/v%s"%product_data_version
-
 
 
 def create_state_sdf():
@@ -167,7 +159,7 @@ def read_base_data(subgeo, generateDelta = False):
     return base_sdf
 
 
-def read_customer_data(customer_data_version, state_fips = 'All', generateDelta=False):
+def read_customer_data(customer_data_version, state_fips = 'All', generateDelta = False):
     
     """
     This function reads the customer data geographic locations for the specified version of the table using SQL queries!
@@ -254,10 +246,10 @@ def read_products_data(product_data_version, state_fips = 'All', generateDelta =
                     .options(header = True, inferSchema = False) \
                     .option("sep", ",") \
                     .load(csv_location).columns
-        #product_quality: 1 means product has a warranty while 0 means it does not come with a warranty.
+        #product_tier: 1 means product has a warranty and 0 means it does not come with a warranty.
         dtype_dict= {'business_id': StringType(),'customer_id': StringType(), 'block_geoid': StringType(), 
                           'product_model': IntegerType(), 'product_max_power': IntegerType(),'product_min_power': IntegerType(), 
-                          'product_quality': IntegerType()}
+                          'product_tier': IntegerType()}
 
         df_schema = StructType([StructField(c, dtype_dict[c]) for  c in cols]) 
 
@@ -286,7 +278,7 @@ def read_products_data(product_data_version, state_fips = 'All', generateDelta =
         productSDF = spark.sql(sql_query)
         
     return productSDF.select('customer_id', 'block_geoid', 'product_model', 'product_max_power',
-                            'product_min_power', 'product_quality')
+                            'product_min_power', 'product_tier')
 
 
 def process_subgeo(subgeo):
@@ -378,7 +370,7 @@ def quality_slicer(sdf, level='Bronze', model_code='All'):
         FROM tmp_sdf
         WHERE product_max_power >= {power_level_dict[level][0]}
         AND product_min_power >= {power_level_dict[level][1]}
-        AND product_quality = 1
+        AND product_tier = 1
         {model_filter}
     """
     
